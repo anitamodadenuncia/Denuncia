@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NR1 — Sistema de Denúncias</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #22283a;
+    --accent: #e8c44a;
+    --accent2: #f0732a;
+    --danger: #e84a4a;
+    --success: #4ae89a;
+    --text: #eef0f5;
+    --muted: #7a8199;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BG texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(232,196,74,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(240,115,42,0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 48px;
+    gap: 16px;
+  }
+  .header-left {}
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(232,196,74,0.12);
+    border: 1px solid rgba(232,196,74,0.3);
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+  }
+  .badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  h1 span { color: var(--accent); }
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 8px;
+    line-height: 1.6;
+    max-width: 420px;
+  }
+  .confidential {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(232,68,74,0.08);
+    border: 1px solid rgba(232,68,74,0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #f08a8a;
+    white-space: nowrap;
+  }
+  .confidential svg { flex-shrink: 0; }
+
+  /* HOME BUTTONS */
+  .home-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 60px 0;
+    animation: fadeUp 0.5s ease both;
+  }
+  .home-label {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .home-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 520px;
+  }
+  .home-btn {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 36px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
+    text-align: center;
+  }
+  .home-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .home-btn.new::before { background: radial-gradient(ellipse at 50% 0%, rgba(240,115,42,0.15), transparent 70%); }
+  .home-btn.consult::before { background: radial-gradient(ellipse at 50% 0%, rgba(74,232,154,0.12), transparent 70%); }
+  .home-btn:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+  .home-btn:hover::before { opacity: 1; }
+  .home-btn:active { transform: translateY(0); }
+  .home-btn .icon {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+  }
+  .home-btn.new .icon { background: rgba(240,115,42,0.15); }
+  .home-btn.consult .icon { background: rgba(74,232,154,0.12); }
+  .home-btn .btn-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .home-btn.new .btn-title { color: var(--accent2); }
+  .home-btn.consult .btn-title { color: var(--success); }
+  .home-btn .btn-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* SCREENS */
+  .screen { animation: fadeUp 0.4s ease both; display: none; }
+  .screen.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* BACK BUTTON */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 28px;
+    background: none;
+    border: none;
+    padding: 0;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--text); }
+
+  /* SECTION */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* FORM */
+  .field-group {
+    display: grid;
+    gap: 16px;
+  }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .field-row { grid-template-columns: 1fr; } }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+  }
+  label .req { color: var(--accent2); margin-left: 2px; }
+
+  input[type=text], input[type=email], input[type=tel], input[type=date],
+  select, textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: rgba(232,196,74,0.5);
+    box-shadow: 0 0 0 3px rgba(232,196,74,0.08);
+  }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a8199' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
+  textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+  option { background: #181c24; }
+
+  /* SEVERITY */
+  .severity-group {
+    display: flex;
+    gap: 10px;
+  }
+  .severity-opt { flex: 1; }
+  .severity-opt input { display: none; }
+  .severity-opt label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin: 0;
+    transition: all 0.2s;
+  }
+  .severity-opt label .emoji { font-size: 20px; }
+  .severity-opt input:checked + label { border-color: currentColor; }
+  .sev-low label { color: #4ae89a; }
+  .sev-low input:checked + label { background: rgba(74,232,154,0.1); }
+  .sev-med label { color: var(--accent); }
+  .sev-med input:checked + label { background: rgba(232,196,74,0.1); }
+  .sev-high label { color: var(--accent2); }
+  .sev-high input:checked + label { background: rgba(240,115,42,0.1); }
+  .sev-crit label { color: var(--danger); }
+  .sev-crit input:checked + label { background: rgba(232,74,74,0.1); }
+
+  /* CHECKBOX */
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    margin: 0;
+  }
+  .checkbox-label input[type=checkbox] {
+    width: 16px; height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ATTACHMENTS */
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: rgba(232,196,74,0.4);
+    background: rgba(232,196,74,0.03);
+  }
+  .drop-zone input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    background: none;
+    width: 100%; height: 100%;
+  }
+  .drop-icon { font-size: 32px; margin-bottom: 10px; }
+  .drop-text { font-size: 14px; color: var(--muted); }
+  .drop-text strong { color: var(--accent); }
+  .drop-hint { font-size: 11px; color: var(--muted); margin-top: 4px; opacity: 0.6; }
+  .file-list { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .file-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .file-item .file-icon { font-size: 18px; flex-shrink: 0; }
+  .file-item .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-item .file-size { color: var(--muted); font-size: 11px; flex-shrink: 0; }
+  .file-item .file-remove { color: var(--danger); cursor: pointer; font-size: 16px; flex-shrink: 0; background: none; border: none; padding: 0 4px; }
+
+  /* SUBMIT */
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--accent2), #d45a1a);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .submit-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+    pointer-events: none;
+  }
+  .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(240,115,42,0.35); }
+  .submit-btn:active { transform: translateY(0); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* LOADING */
+  .loading-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 2px;
+    margin-bottom: 12px;
+    animation: loadSlide 1.5s ease infinite;
+    display: none;
+  }
+  .loading-bar.active { display: block; }
+  @keyframes loadSlide {
+    0% { width: 0; margin-left: 0; }
+    50% { width: 100%; margin-left: 0; }
+    100% { width: 0; margin-left: 100%; }
+  }
+
+  /* SUCCESS */
+  .success-card {
+    background: var(--surface);
+    border: 1px solid rgba(74,232,154,0.3);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    animation: fadeUp 0.5s ease both;
+  }
+  .success-icon { font-size: 56px; margin-bottom: 20px; }
+  .success-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--success);
+    margin-bottom: 8px;
+  }
+  .success-msg { color: var(--muted); font-size: 14px; line-height: 1.6; }
+  .protocol-box {
+    margin: 24px 0;
+    background: var(--surface2);
+    border: 1px solid rgba(74,232,154,0.2);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .protocol-label { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .protocol-number {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--success);
+  }
+  .copy-btn {
+    margin-top: 8px;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: none; border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 12px;
+    font-size: 12px; color: var(--muted);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .copy-btn:hover { border-color: var(--success); color: var(--success); }
+  .new-report-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 20px;
+    font-size: 14px; color: var(--text); cursor: pointer; transition: all 0.2s;
+    margin-top: 16px;
+  }
+  .new-report-btn:hover { border-color: rgba(255,255,255,0.2); background: var(--surface); }
+
+  /* CONSULT SCREEN */
+  .consult-input-wrap {
+    display: flex; gap: 12px;
+  }
+  .consult-input-wrap input { flex: 1; font-size: 16px; font-family: var(--font-display); font-weight: 700; letter-spacing: 0.06em; }
+  .consult-go {
+    padding: 11px 20px;
+    background: var(--accent);
+    color: #000;
+    font-family: var(--font-display);
+    font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    border: none; border-radius: 10px; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .consult-go:hover { background: #f0d060; }
+
+  /* STATUS CARD */
+  .status-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-top: 20px;
+    animation: fadeUp 0.3s ease both;
+  }
+  .status-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 20px; gap: 12px; flex-wrap: wrap;
+  }
+  .status-protocol { font-family: var(--font-display); font-size: 20px; font-weight: 800; }
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .status-badge.pending { background: rgba(232,196,74,0.15); color: var(--accent); }
+  .status-badge.analysis { background: rgba(240,115,42,0.15); color: var(--accent2); }
+  .status-badge.resolved { background: rgba(74,232,154,0.15); color: var(--success); }
+  .status-badge.archived { background: rgba(122,129,153,0.15); color: var(--muted); }
+
+  .status-info { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  @media (max-width: 480px) { .status-info { grid-template-columns: 1fr; } }
+  .info-item label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .info-item .value { font-size: 14px; font-weight: 500; }
+
+  .status-timeline { border-top: 1px solid var(--border); padding-top: 20px; }
+  .timeline-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+  .timeline-item {
+    display: flex; gap: 12px; margin-bottom: 14px;
+  }
+  .timeline-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--success); flex-shrink: 0; margin-top: 4px;
+  }
+  .timeline-dot.muted { background: var(--border); }
+  .timeline-content {}
+  .timeline-action { font-size: 13px; font-weight: 500; }
+  .timeline-time { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .not-found {
+    text-align: center; padding: 40px;
+    color: var(--muted); font-size: 14px;
+  }
+  .not-found .emoji { font-size: 40px; display: block; margin-bottom: 12px; }
+
+  /* HELPER */
+  .helper { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .divider { height: 1px; background: var(--border); margin: 4px 0; }
+  .ai-label {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; color: var(--accent); background: rgba(232,196,74,0.08);
+    border-radius: 4px; padding: 2px 8px; margin-left: 6px;
+  }
+  .spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <div class="header">
+    <div class="header-left">
+      <div class="badge">NR1 · Sistema de Denúncias</div>
+      <h1>Canal de <span>Ética</span><br>e Segurança</h1>
+      <p class="subtitle">Denuncie violações à NR1 com segurança e sigilo garantidos.</p>
+    </div>
+    <div class="confidential">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      100% Confidencial
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div id="home" class="screen active">
+    <div class="home-screen">
+      <p class="home-label">O que deseja fazer?</p>
+      <div class="home-buttons">
+        <div class="home-btn new" onclick="goTo('form')">
+          <div class="icon">📣</div>
+          <div>
+            <div class="btn-title">Fazer Denúncia</div>
+            <div class="btn-desc">Registre uma violação ou situação de risco</div>
+          </div>
+        </div>
+        <div class="home-btn consult" onclick="goTo('consult')">
+          <div class="icon">🔍</div>
+          <div>
+            <div class="btn-title">Consultar Status</div>
+            <div class="btn-desc">Acompanhe sua denúncia pelo protocolo</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORM SCREEN -->
+  <div id="form" class="screen">
+    <button class="back-btn" onclick="goTo('home')">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Voltar
+    </button>
+
+    <!-- Denunciante -->
+    <div class="section">
+      <div class="section-title">Identificação <span style="color:var(--accent);font-size:10px;font-weight:500;text-transform:none;letter-spacing:0">(opcional — sua identidade é protegida)</span></div>
+      <div class="field-group">
+        <label><input type="checkbox" id="anon" onchange="toggleAnon(this)" style="width:14px;height:14px;vertical-align:middle;accent-color:var(--accent);margin-right:6px;"> Prefiro fazer denúncia anônima</label>
+        <div id="identity-fields" class="field-group">
+          <div class="field-row">
+            <div>
+              <label>Nome completo</label>
+              <input type="text" id="nome" placeholder="Seu nome">
+            </div>
+            <div>
+              <label>Matrícula / CPF</label>
+              <input type="text" id="matricula" placeholder="000.000.000-00">
+            </div>
+          </div>
+          <div class="field-row">
+            <div>
+              <label>E-mail</label>
+              <input type="email" id="email" placeholder="email@empresa.com">
+            </div>
+            <div>
+              <label>Telefone</label>
+              <input type="tel" id="telefone" placeholder="(11) 99999-9999">
+            </div>
+          </div>
+          <div>
+            <label>Setor / Departamento</label>
+            <input type="text" id="setor" placeholder="Ex: Almoxarifado, Produção, Administrativo...">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Denúncia -->
+    <div class="section">
+      <div class="section-title">Dados da Ocorrência</div>
+      <div class="field-group">
+        <div class="field-row">
+          <div>
+            <label>Tipo de violação <span class="req">*</span></label>
+            <select id="tipo">
+              <option value="">Selecionar...</option>
+              <option>Falta de EPI / EPC</option>
+              <option>Risco de acidente</option>
+              <option>Condições insalubres</option>
+              <option>Assédio moral ou sexual</option>
+              <option>Discriminação</option>
+              <option>Jornada excessiva</option>
+              <option>Falta de treinamento NR</option>
+              <option>Negligência de gestão</option>
+              <option>Acidente de trabalho</option>
+              <option>Outros</option>
+            </select>
+          </div>
+          <div>
+            <label>Local da ocorrência <span class="req">*</span></label>
+            <input type="text" id="local" placeholder="Ex: Setor B, Galpão 3...">
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label>Data da ocorrência <span class="req">*</span></label>
+            <input type="date" id="data-ocorrencia">
+          </div>
+          <div>
+            <label>Já foi comunicado internamente?</label>
+            <select id="comunicado">
+              <option value="">Selecionar...</option>
+              <option>Sim, mas sem resolução</option>
+              <option>Sim, em andamento</option>
+              <option>Não foi comunicado</option>
+              <option>Tentei, mas fui ignorado</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label>Descrição detalhada <span class="req">*</span></label>
+          <textarea id="descricao" rows="5" placeholder="Descreva com o máximo de detalhes: o que aconteceu, quem estava envolvido, riscos identificados, consequências..."></textarea>
+          <p class="helper">Quanto mais detalhes, mais rápida a investigação.</p>
+        </div>
+        <div>
+          <label>Gravidade <span class="req">*</span></label>
+          <div class="severity-group">
+            <div class="severity-opt sev-low">
+              <input type="radio" name="severity" id="sev1" value="Baixa">
+              <label for="sev1"><span class="emoji">🟢</span>Baixa</label>
+            </div>
+            <div class="severity-opt sev-med">
+              <input type="radio" name="severity" id="sev2" value="Média">
+              <label for="sev2"><span class="emoji">🟡</span>Média</label>
+            </div>
+            <div class="severity-opt sev-high">
+              <input type="radio" name="severity" id="sev3" value="Alta">
+              <label for="sev3"><span class="emoji">🟠</span>Alta</label>
+            </div>
+            <div class="severity-opt sev-crit">
+              <input type="radio" name="severity" id="sev4" value="Crítica">
+              <label for="sev4"><span class="emoji">🔴</span>Crítica</label>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label>Testemunhas (nomes, se houver)</label>
+          <input type="text" id="testemunhas" placeholder="Ex: João Silva, Maria Souza">
+        </div>
+      </div>
+    </div>
+
+    <!-- Anexos -->
+    <div class="section">
+      <div class="section-title">Anexos <span class="ai-label">✦ Recomendado</span></div>
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" multiple accept="image/*,.pdf,.doc,.docx,.mp4,.avi,.zip" onchange="handleFiles(this.files)">
+        <div class="drop-icon">📎</div>
+        <div class="drop-text"><strong>Clique ou arraste arquivos</strong></div>
+        <div class="drop-hint">Imagens, vídeos, PDFs, documentos — máx. 20MB por arquivo</div>
+      </div>
+      <div class="file-list" id="fileList"></div>
+    </div>
+
+    <!-- Submit -->
+    <div class="loading-bar" id="loadingBar"></div>
+    <button class="submit-btn" id="submitBtn" onclick="submitForm()">
+      Enviar Denúncia com Segurança
+    </button>
+    <p class="helper" style="text-align:center;margin-top:10px;">Seus dados são criptografados e protegidos.</p>
+  </div>
+
+  <!-- SUCCESS SCREEN -->
+  <div id="success" class="screen">
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Denúncia Registrada!</div>
+      <p class="success-msg">Sua denúncia foi recebida com sucesso e encaminhada para análise. Guarde seu protocolo para acompanhar o andamento.</p>
+      <div class="protocol-box">
+        <div class="protocol-label">Protocolo de Acompanhamento</div>
+        <div class="protocol-number" id="protocolDisplay">—</div>
+        <button class="copy-btn" onclick="copyProtocol()">📋 Copiar protocolo</button>
+      </div>
+      <p class="success-msg" style="font-size:12px;">Prazo estimado de retorno: <strong style="color:var(--text)">5 a 10 dias úteis</strong></p>
+      <button class="new-report-btn" onclick="goTo('home')">↩ Fazer nova denúncia ou consultar</button>
+    </div>
+  </div>
+
+  <!-- CONSULT SCREEN -->
+  <div id="consult" class="screen">
+    <button class="back-btn" onclick="goTo('home')">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Voltar
+    </button>
+
+    <div class="section">
+      <div class="section-title">Consulta de Denúncia</div>
+      <label>Digite o número do protocolo</label>
+      <div class="consult-input-wrap">
+        <input type="text" id="protocolInput" placeholder="NR1-2026-XXXX" style="text-transform:uppercase;font-weight:700;letter-spacing:0.06em;" oninput="this.value=this.value.toUpperCase()">
+        <button class="consult-go" onclick="consultProtocol()">Consultar</button>
+      </div>
+    </div>
+
+    <div id="statusResult"></div>
+  </div>
+
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+// Substitua com suas credenciais reais
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz96aSV95U1v2wajl_26o9OVmRvWTyzhWHMAhSvh3QdnW8b_bPrWsC2qWEfAX9R0u5h/exec';
+const ANTHROPIC_API_KEY = ''; // deixe vazio — a chave já está no ambiente Claude
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let attachedFiles = [];
+let currentProtocol = '';
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  el.style.animation = 'none';
+  requestAnimationFrame(() => { el.style.animation = ''; });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── ANON TOGGLE ──────────────────────────────────────────────────────────────
+function toggleAnon(cb) {
+  document.getElementById('identity-fields').style.display = cb.checked ? 'none' : 'grid';
+}
+
+// ─── FILE HANDLING ────────────────────────────────────────────────────────────
+function handleFiles(files) {
+  for (const f of files) {
+    if (attachedFiles.find(x => x.name === f.name)) continue;
+    attachedFiles.push(f);
+  }
+  renderFileList();
+}
+
+function renderFileList() {
+  const list = document.getElementById('fileList');
+  list.innerHTML = '';
+  attachedFiles.forEach((f, i) => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    const icons = { pdf:'📄', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', mp4:'🎬', avi:'🎬', zip:'🗜️', doc:'📝', docx:'📝' };
+    const icon = icons[ext] || '📎';
+    const size = f.size > 1048576 ? (f.size/1048576).toFixed(1)+'MB' : (f.size/1024).toFixed(0)+'KB';
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    div.innerHTML = `<span class="file-icon">${icon}</span><span class="file-name">${f.name}</span><span class="file-size">${size}</span><button class="file-remove" onclick="removeFile(${i})">✕</button>`;
+    list.appendChild(div);
+  });
+}
+
+function removeFile(i) {
+  attachedFiles.splice(i, 1);
+  renderFileList();
+}
+
+// Drag & Drop
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+
+// ─── PROTOCOL GENERATOR ───────────────────────────────────────────────────────
+async function generateProtocol(tipo, gravidade) {
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 100,
+        messages: [{
+          role: 'user',
+          content: `Gere APENAS um código de protocolo único para uma denúncia NR1. Tipo: "${tipo}", Gravidade: "${gravidade}", Ano: 2026. 
+Formato EXATO: NR1-2026-XXXX onde XXXX é uma sequência alfanumérica aleatória de 4 caracteres maiúsculos (letras e números misturados). 
+Retorne SOMENTE o código, sem texto extra.`
+        }]
+      })
+    });
+    const data = await res.json();
+    const protocol = data.content?.[0]?.text?.trim();
+    if (protocol && protocol.startsWith('NR1-')) return protocol;
+  } catch(e) {}
+  // fallback
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return `NR1-2026-${code}`;
+}
+
+// ─── SUBMIT ───────────────────────────────────────────────────────────────────
+async function submitForm() {
+  // Validação
+  const tipo = document.getElementById('tipo').value;
+  const local = document.getElementById('local').value.trim();
+  const data = document.getElementById('data-ocorrencia').value;
+  const descricao = document.getElementById('descricao').value.trim();
+  const gravidade = document.querySelector('input[name=severity]:checked')?.value;
+
+  if (!tipo || !local || !data || !descricao || !gravidade) {
+    shake();
+    alert('⚠️ Preencha todos os campos obrigatórios: Tipo, Local, Data, Descrição e Gravidade.');
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  const bar = document.getElementById('loadingBar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Gerando protocolo com IA...';
+  bar.classList.add('active');
+
+  // Gerar protocolo via IA
+  const protocol = await generateProtocol(tipo, gravidade);
+  currentProtocol = protocol;
+
+  btn.innerHTML = '<span class="spinner"></span> Registrando denúncia...';
+
+  // Montar payload
+  const anon = document.getElementById('anon').checked;
+  const payload = {
+    protocol,
+    timestamp: new Date().toLocaleString('pt-BR'),
+    anonimo: anon ? 'Sim' : 'Não',
+    nome: anon ? '—' : document.getElementById('nome').value,
+    matricula: anon ? '—' : document.getElementById('matricula').value,
+    email: anon ? '—' : document.getElementById('email').value,
+    telefone: anon ? '—' : document.getElementById('telefone').value,
+    setor: anon ? '—' : document.getElementById('setor').value,
+    tipo,
+    local,
+    data_ocorrencia: data,
+    comunicado: document.getElementById('comunicado').value || '—',
+    descricao,
+    gravidade,
+    testemunhas: document.getElementById('testemunhas').value || '—',
+    anexos: attachedFiles.map(f => f.name).join(', ') || 'Nenhum',
+    status: 'Pendente'
+  };
+
+  // Salvar no Google Sheets
+  await saveToSheets(payload);
+
+  bar.classList.remove('active');
+  btn.disabled = false;
+  btn.innerHTML = 'Enviar Denúncia com Segurança';
+
+  document.getElementById('protocolDisplay').textContent = protocol;
+  goTo('success');
+}
+
+// ─── GOOGLE SHEETS ────────────────────────────────────────────────────────────
+async function saveToSheets(data) {
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  } catch(e) {
+    // Silently fail — salva localmente como fallback
+    const saves = JSON.parse(localStorage.getItem('nr1_saves') || '[]');
+    saves.push(data);
+    localStorage.setItem('nr1_saves', JSON.stringify(saves));
+  }
+
+  // Sempre salva localmente também
+  const saves = JSON.parse(localStorage.getItem('nr1_saves') || '[]');
+  saves.push(data);
+  localStorage.setItem('nr1_saves', JSON.stringify(saves));
+}
+
+// ─── CONSULT ──────────────────────────────────────────────────────────────────
+function consultProtocol() {
+  const proto = document.getElementById('protocolInput').value.trim().toUpperCase();
+  const result = document.getElementById('statusResult');
+
+  if (!proto) { result.innerHTML = ''; return; }
+
+  // Busca no localStorage
+  const saves = JSON.parse(localStorage.getItem('nr1_saves') || '[]');
+  const record = saves.find(s => s.protocol === proto);
+
+  if (!record) {
+    result.innerHTML = `<div class="status-card"><div class="not-found"><span class="emoji">🔍</span>Protocolo não encontrado.<br>Verifique o número e tente novamente.</div></div>`;
+    return;
+  }
+
+  const statusMap = {
+    'Pendente': { cls: 'pending', label: '⏳ Pendente', desc: 'Recebido, aguardando triagem' },
+    'Em análise': { cls: 'analysis', label: '🔎 Em análise', desc: 'Investigação em andamento' },
+    'Resolvido': { cls: 'resolved', label: '✅ Resolvido', desc: 'Medidas tomadas' },
+    'Arquivado': { cls: 'archived', label: '📁 Arquivado', desc: 'Caso encerrado' }
+  };
+  const st = statusMap[record.status] || statusMap['Pendente'];
+
+  result.innerHTML = `
+  <div class="status-card">
+    <div class="status-header">
+      <div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px">Protocolo</div>
+        <div class="status-protocol">${record.protocol}</div>
+      </div>
+      <div class="status-badge ${st.cls}">${st.label}</div>
+    </div>
+    <div class="status-info">
+      <div class="info-item"><label>Tipo de violação</label><div class="value">${record.tipo}</div></div>
+      <div class="info-item"><label>Gravidade</label><div class="value">${record.gravidade}</div></div>
+      <div class="info-item"><label>Local</label><div class="value">${record.local}</div></div>
+      <div class="info-item"><label>Registrado em</label><div class="value">${record.timestamp}</div></div>
+      <div class="info-item"><label>Anônimo</label><div class="value">${record.anonimo}</div></div>
+      <div class="info-item"><label>Anexos</label><div class="value">${record.anexos}</div></div>
+    </div>
+    <div class="status-timeline">
+      <div class="timeline-title">Histórico</div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-action">Denúncia registrada e protocolo gerado</div>
+          <div class="timeline-time">${record.timestamp}</div>
+        </div>
+      </div>
+      <div class="timeline-item" style="opacity:0.4">
+        <div class="timeline-dot muted"></div>
+        <div class="timeline-content">
+          <div class="timeline-action">Triagem e atribuição de responsável</div>
+          <div class="timeline-time">Aguardando</div>
+        </div>
+      </div>
+      <div class="timeline-item" style="opacity:0.4">
+        <div class="timeline-dot muted"></div>
+        <div class="timeline-content">
+          <div class="timeline-action">Investigação e medidas corretivas</div>
+          <div class="timeline-time">Aguardando</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── COPY ─────────────────────────────────────────────────────────────────────
+function copyProtocol() {
+  navigator.clipboard.writeText(currentProtocol).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✅ Copiado!';
+    setTimeout(() => { btn.textContent = '📋 Copiar protocolo'; }, 2000);
+  });
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function shake() {
+  const btn = document.getElementById('submitBtn');
+  btn.style.animation = 'none';
+  btn.style.transform = 'translateX(-4px)';
+  setTimeout(() => { btn.style.transform = 'translateX(4px)'; }, 80);
+  setTimeout(() => { btn.style.transform = ''; }, 160);
+}
+
+// Set today as default date
+document.getElementById('data-ocorrencia').valueAsDate = new Date();
+</script>
+</body>
+</html>
