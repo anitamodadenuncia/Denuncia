@@ -771,7 +771,7 @@
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 // Substitua com suas credenciais reais
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz96aSV95U1v2wajl_26o9OVmRvWTyzhWHMAhSvh3QdnW8b_bPrWsC2qWEfAX9R0u5h/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJRA7R104AJIRCiLonJsYqjLCWQYFAQImqhdTHdFF8AT7Dj4heytCzO17mqULfcWzj/exec';
 const ANTHROPIC_API_KEY = ''; // deixe vazio — a chave já está no ambiente Claude
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -921,24 +921,23 @@ async function submitForm() {
 
 // ─── GOOGLE SHEETS ────────────────────────────────────────────────────────────
 async function saveToSheets(data) {
-  try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-  } catch(e) {
-    // Silently fail — salva localmente como fallback
-    const saves = JSON.parse(localStorage.getItem('nr1_saves') || '[]');
-    saves.push(data);
-    localStorage.setItem('nr1_saves', JSON.stringify(saves));
-  }
-
-  // Sempre salva localmente também
+  // Sempre salva localmente primeiro como backup
   const saves = JSON.parse(localStorage.getItem('nr1_saves') || '[]');
   saves.push(data);
   localStorage.setItem('nr1_saves', JSON.stringify(saves));
+
+  // Envia para Google Sheets via GET com parâmetros (sem bloqueio CORS)
+  try {
+    const params = new URLSearchParams({ payload: JSON.stringify(data) });
+    const url = GOOGLE_SCRIPT_URL + '?' + params.toString();
+    // Usa imagem invisível para disparar o GET sem bloqueio CORS
+    const img = new Image();
+    img.src = url;
+    // Fallback com fetch no-cors
+    fetch(url, { method: 'GET', mode: 'no-cors' }).catch(() => {});
+  } catch(e) {
+    console.error('Erro ao enviar para Sheets:', e);
+  }
 }
 
 // ─── CONSULT ──────────────────────────────────────────────────────────────────
